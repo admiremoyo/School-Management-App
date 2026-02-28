@@ -3,6 +3,7 @@ import '../../data/local/app_database.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' as drift;
 import '../registration/registration_page.dart';
+import '../payments/receipt_details_page.dart';
 
 class StudentDetailsPage extends StatefulWidget {
   final Student student;
@@ -23,12 +24,25 @@ class StudentDetailsPage extends StatefulWidget {
 class _StudentDetailsPageState extends State<StudentDetailsPage> {
   late Student _currentStudent;
   late String? _currentClassName;
+  double _currentBaseFee = 500;
 
   @override
   void initState() {
     super.initState();
     _currentStudent = widget.student;
     _currentClassName = widget.className;
+    _loadClassFee();
+  }
+
+  Future<void> _loadClassFee() async {
+    final schoolClass = await (widget.db.select(widget.db.classes)
+          ..where((t) => t.id.equals(_currentStudent.classId)))
+        .getSingleOrNull();
+
+    if (!mounted) return;
+    setState(() {
+      _currentBaseFee = (schoolClass?.baseFee ?? 500).toDouble();
+    });
   }
 
   Future<void> _refreshStudent() async {
@@ -43,6 +57,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     setState(() {
       _currentStudent = updatedStudent;
       _currentClassName = updatedClass?.name;
+      _currentBaseFee = (updatedClass?.baseFee ?? 500).toDouble();
     });
   }
 
@@ -185,31 +200,139 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
         }
 
         final payments = snapshot.data ?? [];
+        final successfulPayments = payments.where((p) => p.status != 'VOIDED').toList();
+        final totalPaid = successfulPayments.fold<double>(0, (sum, p) => sum + p.amount);
+        final outstanding = (_currentBaseFee - totalPaid) > 0
+            ? (_currentBaseFee - totalPaid)
+            : 0.0;
+        final status = totalPaid <= 0
+            ? 'Unpaid'
+            : outstanding > 0
+                ? 'Partial'
+                : 'Paid';
 
         return _buildDetailCard(
           context,
           'Payment History',
-          payments.isEmpty
-              ? [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(
-                      child: Text(
-                        'No payments recorded yet.',
-                        style: TextStyle(color: Colors.grey),
+          [
+            _buildFinancialSummaryRow(
+              totalFees: _currentBaseFee,
+              totalPaid: totalPaid,
+              outstanding: outstanding,
+              status: status,
+            ),
+            const Divider(height: 24),
+            if (payments.isNotEmpty)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Expanded(flex: 3, child: Text('Receipt No', style: TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(flex: 2, child: Text('Date', style: TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(flex: 2, child: Text('Method', style: TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(flex: 2, child: Text('Amount', style: TextStyle(fontWeight: FontWeight.w700), textAlign: TextAlign.right)),
+                  ],
+                ),
+              ),
+            if (payments.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Center(
+                  child: Text(
+                    'No payments recorded yet.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              )
+            else
+              ...payments.map((p) {
+                final receipt = p.receiptNumber;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: InkWell(
+                          onTap: () async {
+                            final changed = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ReceiptDetailsPage(
+                                  db: widget.db,
+                                  payment: p,
+                                  studentName: _currentStudent.name,
+                                  className: _currentClassName ?? 'No Class',
+                                ),
+                              ),
+                            );
+                            if (changed == true) {
+                              _refreshStudent();
+                            }
+                          },
+                          child: Text(
+                            receipt,
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  )
-                ]
-              : payments.map((p) {
-                  return _buildDetailRow(
-                    Icons.payments_outlined,
-                    DateFormat.yMMMd().format(p.paymentDate),
-                    '\$${p.amount.toStringAsFixed(2)}',
-                  );
-                }).toList(),
+                      Expanded(
+                        flex: 2,
+                        child: Text(DateFormat('dd MMM').format(p.paymentDate)),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(p.paymentMethod ?? 'Cash'),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          '\$${p.amount.toStringAsFixed(2)}',
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildFinancialSummaryRow({
+    required double totalFees,
+    required double totalPaid,
+    required double outstanding,
+    required String status,
+  }) {
+    final warning = outstanding > 0;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: warning ? Colors.orange.shade50 : Colors.green.shade50,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Total Fees: \$${totalFees.toStringAsFixed(2)}'),
+          Text('Total Paid: \$${totalPaid.toStringAsFixed(2)}'),
+          Text(
+            'Outstanding: \$${outstanding.toStringAsFixed(2)}${warning ? '  ⚠️' : ''}',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: warning ? Colors.orange.shade900 : Colors.green.shade900,
+            ),
+          ),
+          Text('Status: $status'),
+        ],
+      ),
     );
   }
 

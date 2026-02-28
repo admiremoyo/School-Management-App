@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/local/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
+import '../../data/services/payment_service.dart';
 
 class RegistrationPage extends StatefulWidget {
   final AppDatabase db;
@@ -127,16 +128,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
         // 3. Record Fee if provided (only for new registrations)
         final feeAmount = double.tryParse(_feeController.text);
         if (feeAmount != null && feeAmount > 0) {
-          await widget.db.into(widget.db.feePayments).insert(
-                FeePaymentsCompanion.insert(
-                  id: const Uuid().v4(),
-                  schoolId: schoolId,
-                  studentId: studentId,
-                  amount: feeAmount,
-                  paymentDate: DateTime.now(),
-                  syncStatus: const drift.Value('PENDING'),
-                ),
-              );
+          await PaymentService(widget.db).recordPayment(
+            studentId: studentId,
+            amount: feeAmount,
+            paymentDate: DateTime.now(),
+            paymentMethod: 'Cash',
+            recordedBy: widget.db.userId,
+          );
         }
       }
 

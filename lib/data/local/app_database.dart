@@ -48,6 +48,8 @@ class Classes extends Table with SyncableTable {
   TextColumn get name => text()();
   @JsonKey('teacher_id')
   TextColumn get teacherId => text().nullable().references(Teachers, #id)();
+  @JsonKey('base_fee')
+  RealColumn get baseFee => real().withDefault(const Constant(0.0))();
 }
 
 @DataClassName('Subject')
@@ -76,6 +78,18 @@ class FeePayments extends Table with SyncableTable {
   DateTimeColumn get paymentDate => dateTime()();
   @JsonKey('payment_method')
   TextColumn get paymentMethod => text().nullable()();
+  @JsonKey('receipt_number')
+  TextColumn get receiptNumber => text().unique()(); // UNIQUE constraint
+  @JsonKey('academic_year')
+  TextColumn get academicYear => text()();
+  IntColumn get term => integer()();
+  @JsonKey('recorded_by')
+  TextColumn get recordedBy => text()();
+  TextColumn get status => text().withDefault(const Constant('SUCCESS'))(); // SUCCESS, VOIDED
+  @JsonKey('void_reason')
+  TextColumn get voidReason => text().nullable()();
+  @JsonKey('voided_by')
+  TextColumn get voidedBy => text().nullable()();
 }
 
 @DataClassName('Staff')
@@ -114,7 +128,32 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? _openConnection(userId));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (m, from, to) async {
+        if (from < 6) {
+          await m.addColumn(feePayments, feePayments.receiptNumber);
+        }
+        if (from < 7) {
+          // Migration to version 7
+          await m.addColumn(classes, classes.baseFee);
+          await m.addColumn(feePayments, feePayments.academicYear);
+          await m.addColumn(feePayments, feePayments.term);
+          await m.addColumn(feePayments, feePayments.recordedBy);
+          await m.addColumn(feePayments, feePayments.status);
+          await m.addColumn(feePayments, feePayments.voidReason);
+          await m.addColumn(feePayments, feePayments.voidedBy);
+          
+          // Note: Making receipt_number unique might require data cleanup if duplicates exist,
+          // but Drift handles the schema change. In a real production app with data, 
+          // you'd need a more cautious approach if duplicates were possible.
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection(String userId) {

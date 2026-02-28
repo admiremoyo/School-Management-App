@@ -611,6 +611,18 @@ class $ClassesTable extends Classes with TableInfo<$ClassesTable, SchoolClass> {
       'REFERENCES teachers (id)',
     ),
   );
+  static const VerificationMeta _baseFeeMeta = const VerificationMeta(
+    'baseFee',
+  );
+  @override
+  late final GeneratedColumn<double> baseFee = GeneratedColumn<double>(
+    'base_fee',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -621,6 +633,7 @@ class $ClassesTable extends Classes with TableInfo<$ClassesTable, SchoolClass> {
     deleted,
     name,
     teacherId,
+    baseFee,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -685,6 +698,12 @@ class $ClassesTable extends Classes with TableInfo<$ClassesTable, SchoolClass> {
         teacherId.isAcceptableOrUnknown(data['teacher_id']!, _teacherIdMeta),
       );
     }
+    if (data.containsKey('base_fee')) {
+      context.handle(
+        _baseFeeMeta,
+        baseFee.isAcceptableOrUnknown(data['base_fee']!, _baseFeeMeta),
+      );
+    }
     return context;
   }
 
@@ -726,6 +745,10 @@ class $ClassesTable extends Classes with TableInfo<$ClassesTable, SchoolClass> {
         DriftSqlType.string,
         data['${effectivePrefix}teacher_id'],
       ),
+      baseFee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}base_fee'],
+      )!,
     );
   }
 
@@ -744,6 +767,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
   final bool deleted;
   final String name;
   final String? teacherId;
+  final double baseFee;
   const SchoolClass({
     required this.id,
     required this.schoolId,
@@ -753,6 +777,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
     required this.deleted,
     required this.name,
     this.teacherId,
+    required this.baseFee,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -767,6 +792,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
     if (!nullToAbsent || teacherId != null) {
       map['teacher_id'] = Variable<String>(teacherId);
     }
+    map['base_fee'] = Variable<double>(baseFee);
     return map;
   }
 
@@ -782,6 +808,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
       teacherId: teacherId == null && nullToAbsent
           ? const Value.absent()
           : Value(teacherId),
+      baseFee: Value(baseFee),
     );
   }
 
@@ -799,6 +826,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
       deleted: serializer.fromJson<bool>(json['deleted']),
       name: serializer.fromJson<String>(json['name']),
       teacherId: serializer.fromJson<String?>(json['teacher_id']),
+      baseFee: serializer.fromJson<double>(json['base_fee']),
     );
   }
   @override
@@ -813,6 +841,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
       'deleted': serializer.toJson<bool>(deleted),
       'name': serializer.toJson<String>(name),
       'teacher_id': serializer.toJson<String?>(teacherId),
+      'base_fee': serializer.toJson<double>(baseFee),
     };
   }
 
@@ -825,6 +854,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
     bool? deleted,
     String? name,
     Value<String?> teacherId = const Value.absent(),
+    double? baseFee,
   }) => SchoolClass(
     id: id ?? this.id,
     schoolId: schoolId ?? this.schoolId,
@@ -834,6 +864,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
     deleted: deleted ?? this.deleted,
     name: name ?? this.name,
     teacherId: teacherId.present ? teacherId.value : this.teacherId,
+    baseFee: baseFee ?? this.baseFee,
   );
   SchoolClass copyWithCompanion(ClassesCompanion data) {
     return SchoolClass(
@@ -847,6 +878,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       name: data.name.present ? data.name.value : this.name,
       teacherId: data.teacherId.present ? data.teacherId.value : this.teacherId,
+      baseFee: data.baseFee.present ? data.baseFee.value : this.baseFee,
     );
   }
 
@@ -860,7 +892,8 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
           ..write('syncStatus: $syncStatus, ')
           ..write('deleted: $deleted, ')
           ..write('name: $name, ')
-          ..write('teacherId: $teacherId')
+          ..write('teacherId: $teacherId, ')
+          ..write('baseFee: $baseFee')
           ..write(')'))
         .toString();
   }
@@ -875,6 +908,7 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
     deleted,
     name,
     teacherId,
+    baseFee,
   );
   @override
   bool operator ==(Object other) =>
@@ -887,7 +921,8 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
           other.syncStatus == this.syncStatus &&
           other.deleted == this.deleted &&
           other.name == this.name &&
-          other.teacherId == this.teacherId);
+          other.teacherId == this.teacherId &&
+          other.baseFee == this.baseFee);
 }
 
 class ClassesCompanion extends UpdateCompanion<SchoolClass> {
@@ -899,6 +934,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
   final Value<bool> deleted;
   final Value<String> name;
   final Value<String?> teacherId;
+  final Value<double> baseFee;
   final Value<int> rowid;
   const ClassesCompanion({
     this.id = const Value.absent(),
@@ -909,6 +945,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
     this.deleted = const Value.absent(),
     this.name = const Value.absent(),
     this.teacherId = const Value.absent(),
+    this.baseFee = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ClassesCompanion.insert({
@@ -920,6 +957,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
     this.deleted = const Value.absent(),
     required String name,
     this.teacherId = const Value.absent(),
+    this.baseFee = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        schoolId = Value(schoolId),
@@ -933,6 +971,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
     Expression<bool>? deleted,
     Expression<String>? name,
     Expression<String>? teacherId,
+    Expression<double>? baseFee,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -944,6 +983,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
       if (deleted != null) 'deleted': deleted,
       if (name != null) 'name': name,
       if (teacherId != null) 'teacher_id': teacherId,
+      if (baseFee != null) 'base_fee': baseFee,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -957,6 +997,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
     Value<bool>? deleted,
     Value<String>? name,
     Value<String?>? teacherId,
+    Value<double>? baseFee,
     Value<int>? rowid,
   }) {
     return ClassesCompanion(
@@ -968,6 +1009,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
       deleted: deleted ?? this.deleted,
       name: name ?? this.name,
       teacherId: teacherId ?? this.teacherId,
+      baseFee: baseFee ?? this.baseFee,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -999,6 +1041,9 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
     if (teacherId.present) {
       map['teacher_id'] = Variable<String>(teacherId.value);
     }
+    if (baseFee.present) {
+      map['base_fee'] = Variable<double>(baseFee.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1016,6 +1061,7 @@ class ClassesCompanion extends UpdateCompanion<SchoolClass> {
           ..write('deleted: $deleted, ')
           ..write('name: $name, ')
           ..write('teacherId: $teacherId, ')
+          ..write('baseFee: $baseFee, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2976,6 +3022,81 @@ class $FeePaymentsTable extends FeePayments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _receiptNumberMeta = const VerificationMeta(
+    'receiptNumber',
+  );
+  @override
+  late final GeneratedColumn<String> receiptNumber = GeneratedColumn<String>(
+    'receipt_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _academicYearMeta = const VerificationMeta(
+    'academicYear',
+  );
+  @override
+  late final GeneratedColumn<String> academicYear = GeneratedColumn<String>(
+    'academic_year',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _termMeta = const VerificationMeta('term');
+  @override
+  late final GeneratedColumn<int> term = GeneratedColumn<int>(
+    'term',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordedByMeta = const VerificationMeta(
+    'recordedBy',
+  );
+  @override
+  late final GeneratedColumn<String> recordedBy = GeneratedColumn<String>(
+    'recorded_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('SUCCESS'),
+  );
+  static const VerificationMeta _voidReasonMeta = const VerificationMeta(
+    'voidReason',
+  );
+  @override
+  late final GeneratedColumn<String> voidReason = GeneratedColumn<String>(
+    'void_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voidedByMeta = const VerificationMeta(
+    'voidedBy',
+  );
+  @override
+  late final GeneratedColumn<String> voidedBy = GeneratedColumn<String>(
+    'voided_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2988,6 +3109,13 @@ class $FeePaymentsTable extends FeePayments
     amount,
     paymentDate,
     paymentMethod,
+    receiptNumber,
+    academicYear,
+    term,
+    recordedBy,
+    status,
+    voidReason,
+    voidedBy,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3074,6 +3202,62 @@ class $FeePaymentsTable extends FeePayments
         ),
       );
     }
+    if (data.containsKey('receipt_number')) {
+      context.handle(
+        _receiptNumberMeta,
+        receiptNumber.isAcceptableOrUnknown(
+          data['receipt_number']!,
+          _receiptNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_receiptNumberMeta);
+    }
+    if (data.containsKey('academic_year')) {
+      context.handle(
+        _academicYearMeta,
+        academicYear.isAcceptableOrUnknown(
+          data['academic_year']!,
+          _academicYearMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_academicYearMeta);
+    }
+    if (data.containsKey('term')) {
+      context.handle(
+        _termMeta,
+        term.isAcceptableOrUnknown(data['term']!, _termMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_termMeta);
+    }
+    if (data.containsKey('recorded_by')) {
+      context.handle(
+        _recordedByMeta,
+        recordedBy.isAcceptableOrUnknown(data['recorded_by']!, _recordedByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedByMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('void_reason')) {
+      context.handle(
+        _voidReasonMeta,
+        voidReason.isAcceptableOrUnknown(data['void_reason']!, _voidReasonMeta),
+      );
+    }
+    if (data.containsKey('voided_by')) {
+      context.handle(
+        _voidedByMeta,
+        voidedBy.isAcceptableOrUnknown(data['voided_by']!, _voidedByMeta),
+      );
+    }
     return context;
   }
 
@@ -3123,6 +3307,34 @@ class $FeePaymentsTable extends FeePayments
         DriftSqlType.string,
         data['${effectivePrefix}payment_method'],
       ),
+      receiptNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receipt_number'],
+      )!,
+      academicYear: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}academic_year'],
+      )!,
+      term: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}term'],
+      )!,
+      recordedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorded_by'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      voidReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}void_reason'],
+      ),
+      voidedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voided_by'],
+      ),
     );
   }
 
@@ -3143,6 +3355,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
   final double amount;
   final DateTime paymentDate;
   final String? paymentMethod;
+  final String receiptNumber;
+  final String academicYear;
+  final int term;
+  final String recordedBy;
+  final String status;
+  final String? voidReason;
+  final String? voidedBy;
   const FeePayment({
     required this.id,
     required this.schoolId,
@@ -3154,6 +3373,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
     required this.amount,
     required this.paymentDate,
     this.paymentMethod,
+    required this.receiptNumber,
+    required this.academicYear,
+    required this.term,
+    required this.recordedBy,
+    required this.status,
+    this.voidReason,
+    this.voidedBy,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3169,6 +3395,17 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
     map['payment_date'] = Variable<DateTime>(paymentDate);
     if (!nullToAbsent || paymentMethod != null) {
       map['payment_method'] = Variable<String>(paymentMethod);
+    }
+    map['receipt_number'] = Variable<String>(receiptNumber);
+    map['academic_year'] = Variable<String>(academicYear);
+    map['term'] = Variable<int>(term);
+    map['recorded_by'] = Variable<String>(recordedBy);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || voidReason != null) {
+      map['void_reason'] = Variable<String>(voidReason);
+    }
+    if (!nullToAbsent || voidedBy != null) {
+      map['voided_by'] = Variable<String>(voidedBy);
     }
     return map;
   }
@@ -3187,6 +3424,17 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
       paymentMethod: paymentMethod == null && nullToAbsent
           ? const Value.absent()
           : Value(paymentMethod),
+      receiptNumber: Value(receiptNumber),
+      academicYear: Value(academicYear),
+      term: Value(term),
+      recordedBy: Value(recordedBy),
+      status: Value(status),
+      voidReason: voidReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidReason),
+      voidedBy: voidedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedBy),
     );
   }
 
@@ -3206,6 +3454,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
       amount: serializer.fromJson<double>(json['amount']),
       paymentDate: serializer.fromJson<DateTime>(json['payment_date']),
       paymentMethod: serializer.fromJson<String?>(json['payment_method']),
+      receiptNumber: serializer.fromJson<String>(json['receipt_number']),
+      academicYear: serializer.fromJson<String>(json['academic_year']),
+      term: serializer.fromJson<int>(json['term']),
+      recordedBy: serializer.fromJson<String>(json['recorded_by']),
+      status: serializer.fromJson<String>(json['status']),
+      voidReason: serializer.fromJson<String?>(json['void_reason']),
+      voidedBy: serializer.fromJson<String?>(json['voided_by']),
     );
   }
   @override
@@ -3222,6 +3477,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
       'amount': serializer.toJson<double>(amount),
       'payment_date': serializer.toJson<DateTime>(paymentDate),
       'payment_method': serializer.toJson<String?>(paymentMethod),
+      'receipt_number': serializer.toJson<String>(receiptNumber),
+      'academic_year': serializer.toJson<String>(academicYear),
+      'term': serializer.toJson<int>(term),
+      'recorded_by': serializer.toJson<String>(recordedBy),
+      'status': serializer.toJson<String>(status),
+      'void_reason': serializer.toJson<String?>(voidReason),
+      'voided_by': serializer.toJson<String?>(voidedBy),
     };
   }
 
@@ -3236,6 +3498,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
     double? amount,
     DateTime? paymentDate,
     Value<String?> paymentMethod = const Value.absent(),
+    String? receiptNumber,
+    String? academicYear,
+    int? term,
+    String? recordedBy,
+    String? status,
+    Value<String?> voidReason = const Value.absent(),
+    Value<String?> voidedBy = const Value.absent(),
   }) => FeePayment(
     id: id ?? this.id,
     schoolId: schoolId ?? this.schoolId,
@@ -3249,6 +3518,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
     paymentMethod: paymentMethod.present
         ? paymentMethod.value
         : this.paymentMethod,
+    receiptNumber: receiptNumber ?? this.receiptNumber,
+    academicYear: academicYear ?? this.academicYear,
+    term: term ?? this.term,
+    recordedBy: recordedBy ?? this.recordedBy,
+    status: status ?? this.status,
+    voidReason: voidReason.present ? voidReason.value : this.voidReason,
+    voidedBy: voidedBy.present ? voidedBy.value : this.voidedBy,
   );
   FeePayment copyWithCompanion(FeePaymentsCompanion data) {
     return FeePayment(
@@ -3268,6 +3544,21 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
       paymentMethod: data.paymentMethod.present
           ? data.paymentMethod.value
           : this.paymentMethod,
+      receiptNumber: data.receiptNumber.present
+          ? data.receiptNumber.value
+          : this.receiptNumber,
+      academicYear: data.academicYear.present
+          ? data.academicYear.value
+          : this.academicYear,
+      term: data.term.present ? data.term.value : this.term,
+      recordedBy: data.recordedBy.present
+          ? data.recordedBy.value
+          : this.recordedBy,
+      status: data.status.present ? data.status.value : this.status,
+      voidReason: data.voidReason.present
+          ? data.voidReason.value
+          : this.voidReason,
+      voidedBy: data.voidedBy.present ? data.voidedBy.value : this.voidedBy,
     );
   }
 
@@ -3283,7 +3574,14 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
           ..write('studentId: $studentId, ')
           ..write('amount: $amount, ')
           ..write('paymentDate: $paymentDate, ')
-          ..write('paymentMethod: $paymentMethod')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('receiptNumber: $receiptNumber, ')
+          ..write('academicYear: $academicYear, ')
+          ..write('term: $term, ')
+          ..write('recordedBy: $recordedBy, ')
+          ..write('status: $status, ')
+          ..write('voidReason: $voidReason, ')
+          ..write('voidedBy: $voidedBy')
           ..write(')'))
         .toString();
   }
@@ -3300,6 +3598,13 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
     amount,
     paymentDate,
     paymentMethod,
+    receiptNumber,
+    academicYear,
+    term,
+    recordedBy,
+    status,
+    voidReason,
+    voidedBy,
   );
   @override
   bool operator ==(Object other) =>
@@ -3314,7 +3619,14 @@ class FeePayment extends DataClass implements Insertable<FeePayment> {
           other.studentId == this.studentId &&
           other.amount == this.amount &&
           other.paymentDate == this.paymentDate &&
-          other.paymentMethod == this.paymentMethod);
+          other.paymentMethod == this.paymentMethod &&
+          other.receiptNumber == this.receiptNumber &&
+          other.academicYear == this.academicYear &&
+          other.term == this.term &&
+          other.recordedBy == this.recordedBy &&
+          other.status == this.status &&
+          other.voidReason == this.voidReason &&
+          other.voidedBy == this.voidedBy);
 }
 
 class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
@@ -3328,6 +3640,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
   final Value<double> amount;
   final Value<DateTime> paymentDate;
   final Value<String?> paymentMethod;
+  final Value<String> receiptNumber;
+  final Value<String> academicYear;
+  final Value<int> term;
+  final Value<String> recordedBy;
+  final Value<String> status;
+  final Value<String?> voidReason;
+  final Value<String?> voidedBy;
   final Value<int> rowid;
   const FeePaymentsCompanion({
     this.id = const Value.absent(),
@@ -3340,6 +3659,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
     this.amount = const Value.absent(),
     this.paymentDate = const Value.absent(),
     this.paymentMethod = const Value.absent(),
+    this.receiptNumber = const Value.absent(),
+    this.academicYear = const Value.absent(),
+    this.term = const Value.absent(),
+    this.recordedBy = const Value.absent(),
+    this.status = const Value.absent(),
+    this.voidReason = const Value.absent(),
+    this.voidedBy = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FeePaymentsCompanion.insert({
@@ -3353,12 +3679,23 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
     required double amount,
     required DateTime paymentDate,
     this.paymentMethod = const Value.absent(),
+    required String receiptNumber,
+    required String academicYear,
+    required int term,
+    required String recordedBy,
+    this.status = const Value.absent(),
+    this.voidReason = const Value.absent(),
+    this.voidedBy = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        schoolId = Value(schoolId),
        studentId = Value(studentId),
        amount = Value(amount),
-       paymentDate = Value(paymentDate);
+       paymentDate = Value(paymentDate),
+       receiptNumber = Value(receiptNumber),
+       academicYear = Value(academicYear),
+       term = Value(term),
+       recordedBy = Value(recordedBy);
   static Insertable<FeePayment> custom({
     Expression<String>? id,
     Expression<String>? schoolId,
@@ -3370,6 +3707,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
     Expression<double>? amount,
     Expression<DateTime>? paymentDate,
     Expression<String>? paymentMethod,
+    Expression<String>? receiptNumber,
+    Expression<String>? academicYear,
+    Expression<int>? term,
+    Expression<String>? recordedBy,
+    Expression<String>? status,
+    Expression<String>? voidReason,
+    Expression<String>? voidedBy,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3383,6 +3727,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
       if (amount != null) 'amount': amount,
       if (paymentDate != null) 'payment_date': paymentDate,
       if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (receiptNumber != null) 'receipt_number': receiptNumber,
+      if (academicYear != null) 'academic_year': academicYear,
+      if (term != null) 'term': term,
+      if (recordedBy != null) 'recorded_by': recordedBy,
+      if (status != null) 'status': status,
+      if (voidReason != null) 'void_reason': voidReason,
+      if (voidedBy != null) 'voided_by': voidedBy,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3398,6 +3749,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
     Value<double>? amount,
     Value<DateTime>? paymentDate,
     Value<String?>? paymentMethod,
+    Value<String>? receiptNumber,
+    Value<String>? academicYear,
+    Value<int>? term,
+    Value<String>? recordedBy,
+    Value<String>? status,
+    Value<String?>? voidReason,
+    Value<String?>? voidedBy,
     Value<int>? rowid,
   }) {
     return FeePaymentsCompanion(
@@ -3411,6 +3769,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
       amount: amount ?? this.amount,
       paymentDate: paymentDate ?? this.paymentDate,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      receiptNumber: receiptNumber ?? this.receiptNumber,
+      academicYear: academicYear ?? this.academicYear,
+      term: term ?? this.term,
+      recordedBy: recordedBy ?? this.recordedBy,
+      status: status ?? this.status,
+      voidReason: voidReason ?? this.voidReason,
+      voidedBy: voidedBy ?? this.voidedBy,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3448,6 +3813,27 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
     if (paymentMethod.present) {
       map['payment_method'] = Variable<String>(paymentMethod.value);
     }
+    if (receiptNumber.present) {
+      map['receipt_number'] = Variable<String>(receiptNumber.value);
+    }
+    if (academicYear.present) {
+      map['academic_year'] = Variable<String>(academicYear.value);
+    }
+    if (term.present) {
+      map['term'] = Variable<int>(term.value);
+    }
+    if (recordedBy.present) {
+      map['recorded_by'] = Variable<String>(recordedBy.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (voidReason.present) {
+      map['void_reason'] = Variable<String>(voidReason.value);
+    }
+    if (voidedBy.present) {
+      map['voided_by'] = Variable<String>(voidedBy.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3467,6 +3853,13 @@ class FeePaymentsCompanion extends UpdateCompanion<FeePayment> {
           ..write('amount: $amount, ')
           ..write('paymentDate: $paymentDate, ')
           ..write('paymentMethod: $paymentMethod, ')
+          ..write('receiptNumber: $receiptNumber, ')
+          ..write('academicYear: $academicYear, ')
+          ..write('term: $term, ')
+          ..write('recordedBy: $recordedBy, ')
+          ..write('status: $status, ')
+          ..write('voidReason: $voidReason, ')
+          ..write('voidedBy: $voidedBy, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5073,6 +5466,7 @@ typedef $$ClassesTableCreateCompanionBuilder =
       Value<bool> deleted,
       required String name,
       Value<String?> teacherId,
+      Value<double> baseFee,
       Value<int> rowid,
     });
 typedef $$ClassesTableUpdateCompanionBuilder =
@@ -5085,6 +5479,7 @@ typedef $$ClassesTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<String> name,
       Value<String?> teacherId,
+      Value<double> baseFee,
       Value<int> rowid,
     });
 
@@ -5189,6 +5584,11 @@ class $$ClassesTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get baseFee => $composableBuilder(
+    column: $table.baseFee,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5310,6 +5710,11 @@ class $$ClassesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get baseFee => $composableBuilder(
+    column: $table.baseFee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$TeachersTableOrderingComposer get teacherId {
     final $$TeachersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5365,6 +5770,9 @@ class $$ClassesTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get baseFee =>
+      $composableBuilder(column: $table.baseFee, builder: (column) => column);
 
   $$TeachersTableAnnotationComposer get teacherId {
     final $$TeachersTableAnnotationComposer composer = $composerBuilder(
@@ -5480,6 +5888,7 @@ class $$ClassesTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> teacherId = const Value.absent(),
+                Value<double> baseFee = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ClassesCompanion(
                 id: id,
@@ -5490,6 +5899,7 @@ class $$ClassesTableTableManager
                 deleted: deleted,
                 name: name,
                 teacherId: teacherId,
+                baseFee: baseFee,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5502,6 +5912,7 @@ class $$ClassesTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 required String name,
                 Value<String?> teacherId = const Value.absent(),
+                Value<double> baseFee = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ClassesCompanion.insert(
                 id: id,
@@ -5512,6 +5923,7 @@ class $$ClassesTableTableManager
                 deleted: deleted,
                 name: name,
                 teacherId: teacherId,
+                baseFee: baseFee,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -7359,6 +7771,13 @@ typedef $$FeePaymentsTableCreateCompanionBuilder =
       required double amount,
       required DateTime paymentDate,
       Value<String?> paymentMethod,
+      required String receiptNumber,
+      required String academicYear,
+      required int term,
+      required String recordedBy,
+      Value<String> status,
+      Value<String?> voidReason,
+      Value<String?> voidedBy,
       Value<int> rowid,
     });
 typedef $$FeePaymentsTableUpdateCompanionBuilder =
@@ -7373,6 +7792,13 @@ typedef $$FeePaymentsTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<DateTime> paymentDate,
       Value<String?> paymentMethod,
+      Value<String> receiptNumber,
+      Value<String> academicYear,
+      Value<int> term,
+      Value<String> recordedBy,
+      Value<String> status,
+      Value<String?> voidReason,
+      Value<String?> voidedBy,
       Value<int> rowid,
     });
 
@@ -7454,6 +7880,41 @@ class $$FeePaymentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get receiptNumber => $composableBuilder(
+    column: $table.receiptNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get academicYear => $composableBuilder(
+    column: $table.academicYear,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get term => $composableBuilder(
+    column: $table.term,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recordedBy => $composableBuilder(
+    column: $table.recordedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidReason => $composableBuilder(
+    column: $table.voidReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidedBy => $composableBuilder(
+    column: $table.voidedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$StudentsTableFilterComposer get studentId {
     final $$StudentsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -7532,6 +7993,41 @@ class $$FeePaymentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get receiptNumber => $composableBuilder(
+    column: $table.receiptNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get academicYear => $composableBuilder(
+    column: $table.academicYear,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get term => $composableBuilder(
+    column: $table.term,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recordedBy => $composableBuilder(
+    column: $table.recordedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidReason => $composableBuilder(
+    column: $table.voidReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidedBy => $composableBuilder(
+    column: $table.voidedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$StudentsTableOrderingComposer get studentId {
     final $$StudentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7598,6 +8094,35 @@ class $$FeePaymentsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get receiptNumber => $composableBuilder(
+    column: $table.receiptNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get academicYear => $composableBuilder(
+    column: $table.academicYear,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get term =>
+      $composableBuilder(column: $table.term, builder: (column) => column);
+
+  GeneratedColumn<String> get recordedBy => $composableBuilder(
+    column: $table.recordedBy,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get voidReason => $composableBuilder(
+    column: $table.voidReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get voidedBy =>
+      $composableBuilder(column: $table.voidedBy, builder: (column) => column);
+
   $$StudentsTableAnnotationComposer get studentId {
     final $$StudentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -7660,6 +8185,13 @@ class $$FeePaymentsTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<DateTime> paymentDate = const Value.absent(),
                 Value<String?> paymentMethod = const Value.absent(),
+                Value<String> receiptNumber = const Value.absent(),
+                Value<String> academicYear = const Value.absent(),
+                Value<int> term = const Value.absent(),
+                Value<String> recordedBy = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> voidReason = const Value.absent(),
+                Value<String?> voidedBy = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FeePaymentsCompanion(
                 id: id,
@@ -7672,6 +8204,13 @@ class $$FeePaymentsTableTableManager
                 amount: amount,
                 paymentDate: paymentDate,
                 paymentMethod: paymentMethod,
+                receiptNumber: receiptNumber,
+                academicYear: academicYear,
+                term: term,
+                recordedBy: recordedBy,
+                status: status,
+                voidReason: voidReason,
+                voidedBy: voidedBy,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -7686,6 +8225,13 @@ class $$FeePaymentsTableTableManager
                 required double amount,
                 required DateTime paymentDate,
                 Value<String?> paymentMethod = const Value.absent(),
+                required String receiptNumber,
+                required String academicYear,
+                required int term,
+                required String recordedBy,
+                Value<String> status = const Value.absent(),
+                Value<String?> voidReason = const Value.absent(),
+                Value<String?> voidedBy = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FeePaymentsCompanion.insert(
                 id: id,
@@ -7698,6 +8244,13 @@ class $$FeePaymentsTableTableManager
                 amount: amount,
                 paymentDate: paymentDate,
                 paymentMethod: paymentMethod,
+                receiptNumber: receiptNumber,
+                academicYear: academicYear,
+                term: term,
+                recordedBy: recordedBy,
+                status: status,
+                voidReason: voidReason,
+                voidedBy: voidedBy,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

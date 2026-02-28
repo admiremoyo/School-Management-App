@@ -9,7 +9,7 @@ import 'package:uuid/uuid.dart';
 void main() {
   testWidgets('Payments Page Record Payment Test', (WidgetTester tester) async {
     // 1. Setup in-memory database
-    final db = AppDatabase(NativeDatabase.memory());
+    final db = AppDatabase('test_user_', 'test_school_', NativeDatabase.memory());
 
     // 2. Add a mock student to the database
     const uuid = Uuid();
@@ -23,7 +23,7 @@ void main() {
         id: classId,
         schoolId: schoolId,
         name: 'Test Class',
-        teacherId: uuid.v4(),
+        teacherId: drift.Value(uuid.v4()),
       )
     );
 
@@ -45,7 +45,7 @@ void main() {
     await tester.pumpAndSettle(); // Wait for _loadData
 
     // 4. Verify empty state
-    expect(find.text('No payments recorded yet.'), findsOneWidget);
+    expect(find.text('No payments found for selected filters.'), findsOneWidget);
 
     // 5. Tap add button
     await tester.tap(find.byType(FloatingActionButton));
